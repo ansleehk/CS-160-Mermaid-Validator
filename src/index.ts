@@ -1,19 +1,19 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import MermaidValidator from './validator.js';
 
 const app = express();
-const port = 3000;
+const PORT = 8080;
 
 app.use(express.json());
 
-app.post('/validate-mermaid', async (req, res) => {
+app.post('/validate-mermaid', async (req: Request, res: Response) => {
     try {
         const { mermaidCode } = req.body;
         if (!mermaidCode) {
             return res.status(400).send({ error: 'Mermaid code is required.' });
         }
 
-        const validator = new MermaidValidator();
+        const validator = await MermaidValidator.getInstance();
         const isValid = await validator.validate(mermaidCode);
 
         res.send({ isValid });
@@ -24,6 +24,6 @@ app.post('/validate-mermaid', async (req, res) => {
     }
 });
 
-app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
 });

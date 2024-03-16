@@ -1,35 +1,48 @@
-import puppeteer from 'puppeteer';
+import puppeteer, { Browser, Page } from 'puppeteer';
 
 class MermaidValidator {
-    constructor() {
-        this.browser = null;
-        this.page = null;
+
+    private browser: Browser | null = null;
+
+    private static instance: MermaidValidator;
+    
+
+    /**
+     * Singleton class to validate Mermaid syntax using Puppeteer
+     */
+    private constructor() {
+        
+
     }
 
-    async launchBrowser() {
+    private async launchBrowser(): Promise<void> {
         this.browser = await puppeteer.launch({
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
+
     }
 
-    async setNewPage() {
+    private async createNewPage(): Promise<Page>{
+        if (!this.browser) {
+            throw new Error('Browser not available');
+        }
+
         const page = await this.browser.newPage();
+
         return page;
     }
 
-    async closeBrowser() {
+    private async closeBrowser() {
         if (this.browser) {
             await this.browser.close();
         }
     }
 
-    async setPageContent(mermaidCode) {
-        await this.launchBrowser();
-         this.page = await this.setNewPage();
+    private async setPageContent(page: Page, mermaidCode: string): Promise<void> {
 
         const escapedMermaidCode = mermaidCode.replace(/`/g, '\\`');
 
-        await this.page.setContent(`
+        await page.setContent(`
             <html>
                 <body>
                     <script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
@@ -49,15 +62,26 @@ class MermaidValidator {
         `, { waitUntil: 'networkidle0' });
     }
 
-    async validate(mermaidCode) {
+    public static async getInstance(){
+        if (!MermaidValidator.instance) {
+            MermaidValidator.instance = new MermaidValidator();
+            await MermaidValidator.instance.launchBrowser();
 
-        await this.setPageContent(mermaidCode);
+        }
+        return MermaidValidator.instance;
+    }
 
-        const validationResult = await this.page.evaluate(() => document.body.innerText);
+    public async validate(mermaidCode: string) {
+
+        const page: Page = await this.createNewPage();
+
+        await this.setPageContent(page, mermaidCode);
+
+        const validationResult = await page.evaluate(() => document.body.innerText);
 
         const isMermaidSyntaxValid = validationResult === 'true';
 
-        await this.closeBrowser();
+        await page.close();
 
         return isMermaidSyntaxValid;
     }
