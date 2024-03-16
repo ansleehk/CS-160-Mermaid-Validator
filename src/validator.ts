@@ -1,4 +1,5 @@
 import puppeteer, { Browser, Page } from 'puppeteer';
+import { PORT } from './index.js';
 
 class MermaidValidator {
 
@@ -42,10 +43,13 @@ class MermaidValidator {
 
         const escapedMermaidCode = mermaidCode.replace(/`/g, '\\`');
 
+        const MERMAID_JS_LOCAL_SERVER_PATH = 'localhost:' + PORT;
+        const MERMAID_JS_LOCAL_PATH = "/lib/mermaid.min.js";
+
         await page.setContent(`
             <html>
                 <body>
-                    <script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+                    <script src="http://${MERMAID_JS_LOCAL_SERVER_PATH}${MERMAID_JS_LOCAL_PATH}"></script>
                     <script>
                     async function parseMermaid() {
                         try {
