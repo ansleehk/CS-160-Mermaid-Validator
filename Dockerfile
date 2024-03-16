@@ -28,8 +28,8 @@ RUN apt-get purge --auto-remove -y wget gnupg2 \
 # Copy the rest of your app's source code
 COPY . .
 
-# Expose port 3000 to the outside once the container has launched
-EXPOSE 3000
+# Expose port 8080 to the outside once the container has launched
+EXPOSE 8080
 
 # Run the application
-CMD ["node", "index.js"]
+CMD ["npm", "start"]
