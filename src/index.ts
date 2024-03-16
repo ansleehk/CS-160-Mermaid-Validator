@@ -7,7 +7,7 @@ export const PORT = 8080;
 
 app.use(express.json());
 
-app.use('/lib', express.static('lib'));
+app.use('/lib', express.static('./lib'));
 
 app.post('/validate-mermaid', async (req: Request, res: Response) => {
     try {
